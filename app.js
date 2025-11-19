@@ -6,12 +6,12 @@ const isLocalhost = window.location.hostname === 'localhost' ||
                     window.location.hostname === '127.0.0.1' ||
                     window.location.hostname === '';
 const API_BASE_URL = isLocalhost
-    ? 'https://b-1029-wuca.onrender.com/api/'
-    : 'https://b-1029-wuca.onrender.com/api/';
+    ? 'https://b-1029-wuca.onrender.com/api'
+    : 'https://b-1029-wuca.onrender.com/api';
 
 // Helpful links (update these after deployment)
 const GITHUB_REPO_URL = 'https://github.com/Klouno123/paws-and-tails.git';
-const RENDER_SERVICE_URL = 'https://b-1029-wuca.onrender.com/api/';
+const RENDER_SERVICE_URL = 'https://b-1029-wuca.onrender.com/api';
 const NETLIFY_SITE_URL = 'ladjabuteam.netlify.app';
 
 // Product data (loaded from API)
@@ -1851,5 +1851,495 @@ function showAddProduct() {
     title.textContent = '➕ Add New Product';
     form.reset();
     document.getElementById('product-id').value = '';
+    
+    // Reset image inputs - default to URL input
+    toggleImageInput('url');
+    
     modal.classList.remove('hidden');
-}       
+}
+
+function editProduct(productId) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+        const modal = document.getElementById('product-modal');
+        const title = document.getElementById('product-modal-title');
+        
+        title.textContent = '✏️ Edit Product';
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-category').value = product.category;
+        document.getElementById('product-description').value = product.description;
+        document.getElementById('product-image').value = product.image;
+        document.getElementById('product-stock').value = product.stock;
+        
+        modal.classList.remove('hidden');
+    }
+}
+
+async function updateStock(productId, change) {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+        const newStock = Math.max(0, product.stock + change);
+        product.stock = newStock;
+        // Save to backend database
+        await saveProductToAPI(product);
+    }
+}
+
+function deleteProduct(productId) {
+    if (confirm('Are you sure you want to delete this product?')) {
+        deleteProductFromAPI(productId);
+    }
+}
+
+function closeProductModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+}
+
+// Toggle between file upload and URL input
+function toggleImageInput(mode) {
+    const fileInput = document.getElementById('product-image-file');
+    const urlInput = document.getElementById('product-image');
+    const btnFile = document.getElementById('btn-upload-file');
+    const btnUrl = document.getElementById('btn-upload-url');
+    
+    if (mode === 'file') {
+        // Switch to file upload
+        fileInput.classList.remove('hidden');
+        fileInput.required = true;
+        urlInput.classList.add('hidden');
+        urlInput.required = false;
+        urlInput.value = '';
+        btnFile.classList.add('bg-blue-500', 'text-white');
+        btnFile.classList.remove('bg-gray-200', 'text-gray-700');
+        btnUrl.classList.add('bg-gray-200', 'text-gray-700');
+        btnUrl.classList.remove('bg-purple-500', 'text-white');
+    } else {
+        // Switch to URL input (default)
+        urlInput.classList.remove('hidden');
+        urlInput.required = true;
+        fileInput.classList.add('hidden');
+        fileInput.required = false;
+        fileInput.value = '';
+        btnUrl.classList.add('bg-purple-500', 'text-white');
+        btnUrl.classList.remove('bg-gray-200', 'text-gray-700');
+        btnFile.classList.add('bg-gray-200', 'text-gray-700');
+        btnFile.classList.remove('bg-blue-500', 'text-white');
+    }
+}
+
+document.getElementById('product-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const productId = document.getElementById('product-id').value ? 
+         document.getElementById('product-id').value : null;
+    const product = {
+        id: productId,
+        name: document.getElementById('product-name').value,
+        price: parseFloat(document.getElementById('product-price').value),
+        category: document.getElementById('product-category').value,
+        description: document.getElementById('product-description').value,
+        image: document.getElementById('product-image').value,
+        stock: parseInt(document.getElementById('product-stock').value) || 0
+    };
+    
+    // Check if file upload is being used
+    const fileInput = document.getElementById('product-image-file');
+    const imageFile = fileInput.files[0];
+    
+    if (imageFile) {
+        // Use FormData for file upload
+        await saveProductWithFile(product, imageFile, productId);
+    } else {
+        // Use regular JSON for URL
+        await saveProductToAPI(product);
+    }
+    
+    closeProductModal();
+});
+
+function updateAdminDashboard() {
+    if (!isAdmin) return;
+    
+    const categories = [...new Set(products.map(p => p.category))];
+    document.getElementById('total-products').textContent = products.length;
+    document.getElementById('total-users').textContent = JSON.parse(localStorage.getItem('users') || '[]').length;
+    document.getElementById('total-categories').textContent = categories.length;
+}
+
+function exportData() {
+    const data = {
+        products: products,
+        users: JSON.parse(localStorage.getItem('users') || '[]'),
+        orders: JSON.parse(localStorage.getItem('orders') || '[]'),
+        timestamp: new Date().toISOString()
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'paws-tails-data.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Data exported successfully! 📤');
+}
+
+function refreshProducts() {
+    loadProductsFromAPI();
+    showNotification('Products refreshed! 🔄');
+}
+
+function toggleAccount() {
+    const modal = document.getElementById('account-modal');
+    modal.classList.toggle('hidden');
+    updateAccountUI();
+}
+
+function showLogin() {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('signup-form').classList.add('hidden');
+    document.getElementById('auth-message').innerHTML = '';
+    // Reset to User role by default
+    selectLoginRole('User');
+}
+
+function showSignup() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('signup-form').classList.remove('hidden');
+    document.getElementById('auth-message').innerHTML = '';
+}
+
+// Function to select login role (User or Admin)
+function selectLoginRole(role) {
+    selectedLoginRole = role;
+    const userBtn = document.getElementById('role-user-btn');
+    const adminBtn = document.getElementById('role-admin-btn');
+    
+    if (role === 'User') {
+        userBtn.classList.add('border-purple-400', 'bg-purple-50', 'text-purple-700', 'active');
+        userBtn.classList.remove('border-gray-300', 'bg-white', 'text-gray-600');
+        adminBtn.classList.add('border-gray-300', 'bg-white', 'text-gray-600');
+        adminBtn.classList.remove('border-red-400', 'bg-red-50', 'text-red-700', 'active');
+    } else {
+        adminBtn.classList.add('border-red-400', 'bg-red-50', 'text-red-700', 'active');
+        adminBtn.classList.remove('border-gray-300', 'bg-white', 'text-gray-600');
+        userBtn.classList.add('border-gray-300', 'bg-white', 'text-gray-600');
+        userBtn.classList.remove('border-purple-400', 'bg-purple-50', 'text-purple-700', 'active');
+    }
+}
+
+// Unified login function that handles both User and Admin login
+async function handleUnifiedLogin() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const messageDiv = document.getElementById('auth-message');
+
+    if (!email || !password) {
+        messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Please fill in all fields!</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Check if the user's role matches the selected role
+            const userRole = data.user.role;
+            const expectedRole = selectedLoginRole;
+            
+            // If Admin was selected, verify the user is actually an Admin
+            if (expectedRole === 'Admin' && userRole !== 'Admin') {
+                messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ This account is not an Admin. Please select "User" role or use an Admin account.</p>';
+                return;
+            }
+            
+            // If User was selected but account is Admin, allow it (Admin can login as User)
+            // Store token and user info
+            authToken = data.token;
+            localStorage.setItem('authToken', data.token);
+            currentUser = {
+                id: data.user.id,
+                name: data.user.name,
+                email: email,
+                isAdmin: userRole === 'Admin'
+            };
+            isAdmin = userRole === 'Admin';
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            updateAccountUI();
+            toggleAccount();
+            
+            if (isAdmin) {
+                showNotification(`Admin access granted, ${data.user.name}! 🛡️`);
+            } else {
+                showNotification(`Welcome back, ${data.user.name}! 🎉`);
+            }
+            
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+            messageDiv.innerHTML = '';
+            
+            // Reload products after login
+            loadProductsFromAPI();
+        } else {
+            messageDiv.innerHTML = `<p class="text-red-500 font-semibold">❌ ${data.message || 'Invalid email or password!'}</p>`;
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        if (error.message && error.message.includes('Failed to fetch')) {
+            messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Cannot connect to server. Make sure the backend is running on port 5000.</p>';
+        } else {
+            messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Connection error. Please try again.</p>';
+        }
+    }
+}
+
+// Keep old function names for backward compatibility (if any onclick handlers still reference them)
+async function handleLogin() {
+    selectLoginRole('User');
+    await handleUnifiedLogin();
+}
+
+async function handleAdminLogin() {
+    selectLoginRole('Admin');
+    await handleUnifiedLogin();
+}
+
+async function handleSignup() {
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    const messageDiv = document.getElementById('auth-message');
+
+    if (!name || !email || !password || !confirm) {
+        messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Please fill in all fields!</p>';
+        return;
+    }
+
+    if (password !== confirm) {
+        messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Passwords don\'t match!</p>';
+        return;
+    }
+
+    if (password.length < 6) {
+        messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Password must be at least 6 characters!</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, password, role: 'User' })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Store token and user info
+            authToken = data.token;
+            localStorage.setItem('authToken', data.token);
+            currentUser = {
+                id: data.user.id,
+                name: data.user.name,
+                email: email,
+                isAdmin: data.user.role === 'Admin'
+            };
+            isAdmin = data.user.role === 'Admin';
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            updateAccountUI();
+            toggleAccount();
+            showNotification(`Welcome to the pack, ${name}! 🎉 Account saved to database!`);
+            
+            document.getElementById('signup-name').value = '';
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('signup-confirm').value = '';
+            messageDiv.innerHTML = '';
+            
+            // Reload products after signup
+            loadProductsFromAPI();
+        } else {
+            messageDiv.innerHTML = `<p class="text-red-500 font-semibold">❌ ${data.message || 'Registration failed!'}</p>`;
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        messageDiv.innerHTML = '<p class="text-red-500 font-semibold">❌ Connection error. Please try again.</p>';
+    }
+}
+
+function handleLogout() {
+    currentUser = null;
+    isAdmin = false;
+    authToken = null;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('authToken');
+    updateAccountUI();
+    showNotification('Logged out successfully! Come back soon! 👋');
+}
+
+function updateAccountUI() {
+    const authView = document.getElementById('auth-view');
+    const profileView = document.getElementById('profile-view');
+    const accountLabel = document.getElementById('account-label');
+    const homeHero = document.getElementById('home-hero');
+    const shopHero = document.getElementById('shop-hero');
+    const productsSection = document.getElementById('products');
+    const contactSection = document.getElementById('contact-us');
+    const adminSection = document.getElementById('admin');
+    const checkoutPage = document.getElementById('checkout-page');
+    const body = document.getElementById('body-class');
+    const aboutSection = document.getElementById('about-us');
+
+    if (currentUser) {
+        authView.classList.add('hidden');
+        profileView.classList.remove('hidden');
+        document.getElementById('profile-name').textContent = `Welcome, ${currentUser.name}!`;
+        document.getElementById('profile-email').textContent = currentUser.email;
+        accountLabel.textContent = currentUser.name.split(' ')[0];
+        
+        homeHero.classList.add('hidden');
+        shopHero.classList.remove('hidden');
+        productsSection.classList.remove('hidden');
+        checkoutPage.classList.add('hidden');
+        
+        if (isAdmin) {
+            adminSection.classList.remove('hidden');
+            contactSection.classList.add('hidden');
+            if (aboutSection) aboutSection.classList.add('hidden');
+            body.classList.add('is-admin');
+        } else {
+            adminSection.classList.add('hidden');
+            contactSection.classList.remove('hidden');
+            if (aboutSection) aboutSection.classList.remove('hidden');
+            body.classList.remove('is-admin');
+        }
+    } else {
+        authView.classList.remove('hidden');
+        profileView.classList.add('hidden');
+        accountLabel.textContent = 'Account';
+        showLogin();
+        
+        homeHero.classList.remove('hidden');
+        shopHero.classList.add('hidden');
+        productsSection.classList.add('hidden');
+        contactSection.classList.add('hidden');
+        adminSection.classList.add('hidden');
+        checkoutPage.classList.add('hidden');
+        body.classList.remove('is-admin');
+        if (aboutSection) aboutSection.classList.remove('hidden');
+    }
+}
+
+// Insert store location & embedded map into the Contact Us section.
+// NOTE: Verify the GPS coordinates below and replace if you want higher precision.
+function insertContactLocation() {
+    const contactSection = document.getElementById('contact-us');
+    if (!contactSection) return;
+
+    // Avoid inserting twice
+    if (document.getElementById('contact-location')) return;
+
+    // Tukuran, Zamboanga del Sur (verify these coords: 7.9499, 123.2431)
+    const lat = 7.9499;
+    const lng = 123.2431;
+    const locationHtml = `
+        <div id="contact-location" class="mb-6">
+            <h3 class="text-lg font-bold">Our Store</h3>
+            <p>Tukuran, Zamboanga del Sur, Philippines</p>
+            <p class="text-sm text-gray-600">GPS: ${lat}, ${lng}</p>
+            <div class="mt-4 w-full rounded overflow-hidden border">
+                <iframe
+                    src="https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed"
+                    width="100%"
+                    height="300"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                ></iframe>
+            </div>
+        </div>
+    `;
+
+    const form = contactSection.querySelector('#contact-form');
+    if (form) {
+        form.insertAdjacentHTML('beforebegin', locationHtml);
+    } else {
+        contactSection.insertAdjacentHTML('beforeend', locationHtml);
+    }
+}
+
+// call on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Global image error handler to prevent undefined image errors
+    document.addEventListener('error', function(e) {
+        if (e.target.tagName === 'IMG') {
+            const img = e.target;
+            if (!img.src || img.src.includes('undefined') || img.src.includes('null')) {
+                img.src = 'https://via.placeholder.com/400x300?text=No+Image';
+                img.onerror = null; // Prevent infinite loop
+            }
+        }
+    }, true);
+    
+    // Restore user session if token exists
+    if (authToken && currentUser) {
+        isAdmin = currentUser.isAdmin === true;
+    } else {
+        // Clear invalid session
+        currentUser = null;
+        authToken = null;
+        isAdmin = false;
+    }
+    
+    // Initialize role selector to User by default
+    if (document.getElementById('role-user-btn')) {
+        selectLoginRole('User');
+    }
+    
+    renderProducts();
+    updateCartUI();
+    updateAccountUI();
+    updateAdminDashboard();
+    loadProductsFromAPI();
+    
+    // Card number formatting
+    document.getElementById('card-number').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s/g, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+    });
+    
+    // Expiry date formatting
+    document.getElementById('card-expiry').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        }
+        e.target.value = value;
+    });
+    
+    // CVV formatting
+    document.getElementById('card-cvv').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+    
+    insertContactLocation();
+});
