@@ -7,7 +7,7 @@ const isLocalhost = window.location.hostname === 'localhost' ||
                     window.location.hostname === '';
 const API_BASE_URL = isLocalhost
     ? 'http://localhost:5000/api'
-    : 'https://paws-and-tails-backend.onrender.com/api';
+    : 'https://b-1029-wuca.onrender.com/api';
 
 // Helpful links (update these after deployment)
 const GITHUB_REPO_URL = 'https://github.com/Klouno123/paws-and-tails.git';
