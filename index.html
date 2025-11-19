@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paws & Tails 🐾 | Your Pet's Happy Place</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fef5e7 0%, #fff5e6 100%);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #ff9a76 0%, #fad390 50%, #6dd5ed 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .paw-print {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .cart-badge {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .product-image {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        .is-admin .admin-only {
+            display: block;
+        }
+
+        .payment-method {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method.selected {
+            border-color: #f97316;
+            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        }
+
+        .step-indicator {
+            position: relative;
+        }
+
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: -1;
+        }
+
+        .step-indicator .step.completed::before {
+            background: #10b981;
+        }
+
+        .step-indicator .step.active::before {
+            background: #f97316;
+        }
+
+        .role-btn.active {
+            font-weight: 700;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="min-h-screen" id="body-class">
+
+    <!-- Header -->
+    <header class="sticky-header">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-4xl paw-print">🐾</span>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">Paws & Tails</h1>
+                        <p class="text-xs text-gray-600">Your Pet's Happy Place</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#products" class="text-gray-700 hover:text-orange-500 font-semibold transition">🎁 Goodies</a>
+                    <a href="#about-us" class="text-gray-700 hover:text-orange-500 font-semibold transition">❤️ Our Story</a>
+                    <a href="#contact-us" class="text-gray-700 hover:text-orange-500 font-semibold transition">📞 Contact</a>
+                    <a href="#admin" class="admin-only text-gray-700 hover:text-orange-500 font-semibold transition">⚙️ Admin</a>
+                </nav>
+                <div class="flex items-center space-x-3">
+                    <button id="account-btn" onclick="toggleAccount()" class="bg-gradient-to-r from-purple-400 to-blue-400 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition">
+                        👤 <span id="account-label">Account</span>
+                    </button>
+                    <button onclick="toggleCart()" class="relative bg-gradient-to-r from-orange-400 to-pink-400 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition">
+                        🛒 Cart
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs cart-badge">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section - Home View -->
+    <section id="home-hero" class="hero-gradient text-white py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl md:text-6xl font-bold mb-6 bounce-in">Welcome to Paws & Tails! 🐶🐱</h2>
+            <p class="text-xl md:text-2xl mb-8 opacity-90">Everything Your Pet Needs for a Happy, Healthy Life!</p>
+            <p class="text-lg mb-8 opacity-90">Join our pack to unlock exclusive pet products, special deals, and more! 🐾</p>
+            <button onclick="toggleAccount()" class="inline-block bg-white text-orange-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-50 transition transform hover:scale-105 shadow-lg">
+                🔐 Login or Sign Up to Shop!
+            </button>
+        </div>
+    </section>
+
+    <!-- Hero Section - Logged In View -->
+    <section id="shop-hero" class="hidden hero-gradient text-white py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl md:text-6xl font-bold mb-6 bounce-in">Everything Your Pet Needs for a Happy, Healthy Life! 🐶🐱</h2>
+            <p class="text-xl md:text-2xl mb-8 opacity-90">From nutritious food to the comfiest beds and the best toys—spoil your best friend right here.</p>
+            <a href="#products" class="inline-block bg-white text-orange-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-50 transition transform hover:scale-105">
+                🎉 Shop Pet Goodies Now!
+            </a>
+        </div>
+    </section>
+
+    <!-- Products Section - Hidden until logged in -->
+    <section id="products" class="hidden max-w-7xl mx-auto px-4 py-16">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">🌟 Featured Products</h2>
+            <p class="text-gray-600 text-lg">Hand-picked goodies that'll make tails wag and whiskers twitch!</p>
+            <button onclick="showAddProduct()" class="admin-only mt-4 bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-2 rounded-full font-semibold hover:shadow-lg transition">
+                ➕ Add New Product
+            </button>
+        </div>
+        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Products will be loaded here -->
+        </div>
+    </section>
+
+    <!-- Checkout Page -->
+    <section id="checkout-page" class="hidden max-w-6xl mx-auto px-4 py-16">
+        <div class="mb-8">
+            <button onclick="backToShopping()" class="text-orange-500 hover:text-orange-600 font-semibold flex items-center gap-2 mb-4">
+                ← Back to Shopping
+            </button>
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">🛒 Checkout</h2>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="step-indicator flex justify-between mb-12 relative">
+            <div class="step active flex flex-col items-center flex-1">
+                <div class="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold mb-2 relative z-10">1</div>
+                <span class="text-sm font-semibold text-gray-700">Cart Review</span>
+            </div>
+            <div class="step flex flex-col items-center flex-1">
+                <div class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold mb-2 relative z-10">2</div>
+                <span class="text-sm font-semibold text-gray-500">Shipping Info</span>
+            </div>
+            <div class="step flex flex-col items-center flex-1">
+                <div class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold mb-2 relative z-10">3</div>
+                <span class="text-sm font-semibold text-gray-500">Payment</span>
+            </div>
+            <div class="step flex flex-col items-center flex-1">
+                <div class="w-10 h-10 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold mb-2 relative z-10">4</div>
+                <span class="text-sm font-semibold text-gray-500">Confirmation</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Checkout Form -->
+            <div class="lg:col-span-2">
+                <form id="checkout-form" class="space-y-6">
+                    <!-- Contact Information -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            📧 Contact Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="checkout-firstname" placeholder="First Name *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            <input type="text" id="checkout-lastname" placeholder="Last Name *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                        </div>
+                        <input type="email" id="checkout-email" placeholder="Email Address *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition mt-4">
+                        <input type="tel" id="checkout-phone" placeholder="Phone Number *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition mt-4">
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            🏠 Shipping Address
+                        </h3>
+                        <input type="text" id="checkout-address" placeholder="Street Address *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition mb-4">
+                        <input type="text" id="checkout-apartment" placeholder="Apartment, Suite, etc. (Optional)" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="checkout-city" placeholder="City *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            <input type="text" id="checkout-state" placeholder="State/Province *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            <input type="text" id="checkout-zip" placeholder="ZIP Code *" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                        </div>
+                        <select id="checkout-country" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition mt-4">
+                            <option value="">Select Country *</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                            <option value="NZ">New Zealand</option>
+                        </select>
+                    </div>
+
+                    <!-- Shipping Method -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            🚚 Shipping Method
+                        </h3>
+                        <div class="space-y-3">
+                            <label class="payment-method flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg" onclick="selectShipping('standard')">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="shipping" value="standard" class="w-5 h-5 text-orange-500" checked>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Standard Shipping</p>
+                                        <p class="text-sm text-gray-600">5-7 Business Days</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-orange-500">FREE</span>
+                            </label>
+                            <label class="payment-method flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg" onclick="selectShipping('express')">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="shipping" value="express" class="w-5 h-5 text-orange-500">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Express Shipping</p>
+                                        <p class="text-sm text-gray-600">2-3 Business Days</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-orange-500">$12.99</span>
+                            </label>
+                            <label class="payment-method flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg" onclick="selectShipping('overnight')">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="shipping" value="overnight" class="w-5 h-5 text-orange-500">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Overnight Shipping</p>
+                                        <p class="text-sm text-gray-600">Next Business Day</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-orange-500">$24.99</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            💳 Payment Method
+                        </h3>
+                        <div class="space-y-3 mb-6">
+                            <label class="payment-method flex items-center p-4 border-2 border-gray-300 rounded-lg" onclick="selectPayment('card')">
+                                <input type="radio" name="payment" value="card" class="w-5 h-5 text-orange-500 mr-3" checked>
+                                <span class="font-semibold text-gray-800">💳 Credit/Debit Card</span>
+                            </label>
+                            <label class="payment-method flex items-center p-4 border-2 border-gray-300 rounded-lg" onclick="selectPayment('paypal')">
+                                <input type="radio" name="payment" value="paypal" class="w-5 h-5 text-orange-500 mr-3">
+                                <span class="font-semibold text-gray-800">🅿️ PayPal</span>
+                            </label>
+                            <label class="payment-method flex items-center p-4 border-2 border-gray-300 rounded-lg" onclick="selectPayment('apple')">
+                                <input type="radio" name="payment" value="apple" class="w-5 h-5 text-orange-500 mr-3">
+                                <span class="font-semibold text-gray-800">🍎 Apple Pay</span>
+                            </label>
+                            <label class="payment-method flex items-center p-4 border-2 border-gray-300 rounded-lg" onclick="selectPayment('google')">
+                                <input type="radio" name="payment" value="google" class="w-5 h-5 text-orange-500 mr-3">
+                                <span class="font-semibold text-gray-800">🔍 Google Pay</span>
+                            </label>
+                        </div>
+
+                        <!-- Card Details (shown when card is selected) -->
+                        <div id="card-details" class="space-y-4">
+                            <input type="text" id="card-number" placeholder="Card Number *" maxlength="19" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            <input type="text" id="card-name" placeholder="Cardholder Name *" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="card-expiry" placeholder="MM/YY *" maxlength="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                                <input type="text" id="card-cvv" placeholder="CVV *" maxlength="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                            </div>
+                        </div>
+
+                        <!-- Alternative payment messages -->
+                        <div id="paypal-message" class="hidden text-center py-6 bg-blue-50 rounded-lg">
+                            <p class="text-gray-700 mb-4">You will be redirected to PayPal to complete your purchase.</p>
+                            <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal" class="mx-auto h-12">
+                        </div>
+                        <div id="apple-message" class="hidden text-center py-6 bg-gray-50 rounded-lg">
+                            <p class="text-gray-700 mb-4">You will use Apple Pay to complete your purchase.</p>
+                            <div class="text-6xl">🍎</div>
+                        </div>
+                        <div id="google-message" class="hidden text-center py-6 bg-gray-50 rounded-lg">
+                            <p class="text-gray-700 mb-4">You will use Google Pay to complete your purchase.</p>
+                            <div class="text-6xl">🔍</div>
+                        </div>
+                    </div>
+
+                    <!-- Order Notes -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            📝 Order Notes (Optional)
+                        </h3>
+                        <textarea id="order-notes" placeholder="Any special instructions for your order? Tell us about your pet!" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">📦 Order Summary</h3>
+                    
+                    <div id="checkout-items" class="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4 space-y-3">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Subtotal:</span>
+                            <span id="checkout-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Shipping:</span>
+                            <span id="checkout-shipping">FREE</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Tax (estimated):</span>
+                            <span id="checkout-tax">$0.00</span>
+                        </div>
+                        <div class="border-t border-gray-300 pt-3 flex justify-between items-center">
+                            <span class="text-xl font-bold text-gray-800">Total:</span>
+                            <span id="checkout-total" class="text-2xl font-bold text-orange-500">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" form="checkout-form" class="w-full mt-6 bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                        Complete Order 🎉
+                    </button>
+
+                    <div class="mt-4 text-center text-sm text-gray-600">
+                        <p>🔒 Secure checkout</p>
+                        <p class="mt-2">Your payment information is encrypted and secure</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="admin" class="hidden max-w-7xl mx-auto px-4 py-16">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">⚙️ Admin Dashboard</h2>
+            <p class="text-gray-600 text-lg">Manage your pet store inventory and orders</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-6 text-gray-800">📊 Store Statistics</h3>
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                        <p class="text-sm text-blue-600 font-semibold">Total Products</p>
+                        <p class="text-3xl font-bold text-blue-800" id="total-products">0</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                        <p class="text-sm text-green-600 font-semibold">Total Users</p>
+                        <p class="text-3xl font-bold text-green-800" id="total-users">0</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
+                        <p class="text-sm text-orange-600 font-semibold">Categories</p>
+                        <p class="text-3xl font-bold text-orange-800" id="total-categories">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-6 text-gray-800">🎯 Quick Actions</h3>
+                <div class="space-y-3">
+                    <button onclick="showAddProduct()" class="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                        ➕ Add New Product
+                    </button>
+                    <button onclick="exportData()" class="w-full bg-gradient-to-r from-blue-400 to-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                        📤 Export Data
+                    </button>
+                    <button onclick="refreshProducts()" class="w-full bg-gradient-to-r from-purple-400 to-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition">
+                        🔄 Refresh Products
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">📦 All Products</h3>
+            <div id="admin-products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Admin product cards will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about-us" class="bg-gradient-to-r from-orange-50 to-pink-50 py-16 px-4">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">🐶 About Paws & Tails</h2>
+            <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                <div class="space-y-6 text-gray-700 text-lg leading-relaxed">
+                    <p><strong class="text-orange-500">Our Mission:</strong> We believe that every pet deserves the very best. Paws & Tails was founded in 2025 by a team of animal lovers with a simple goal: to provide high-quality, safe, and fun products for pets and their owners.</p>
+                    <p>Every product in our catalog—from kibble to collars—is hand-selected and tested for <strong>safety, quality, and wag-worthiness</strong>. We are passionate about animals and committed to providing an exceptional shopping experience.</p>
+                    <p class="text-center text-2xl">Thank you for choosing us! 🐾❤️</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact-us" class="max-w-4xl mx-auto px-4 py-16">
+        <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">📞 Get in Touch</h2>
+        <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+            <p class="text-gray-700 text-lg mb-6">Have a question about an order, a product, or need advice on pet nutrition? We're here to help (and we love hearing about your pets!).</p>
+            
+            <div class="bg-gradient-to-r from-orange-50 to-pink-50 rounded-xl p-6 mb-8">
+                <p class="text-gray-700 leading-relaxed">
+                    📧 <strong>Email:</strong> <a href="mailto:support@pawsandtails.com" class="text-orange-500 hover:underline">support@pawsandtails.com</a><br>
+                    📱 <strong>Phone:</strong> (555) PET-LOVE (738-5683)<br>
+                    📍 <strong>Address:</strong> 456 Kennel Drive, Happy Paws Town, 90210
+                </p>
+            </div>
+
+            <form id="contact-form" class="space-y-4">
+                <input type="text" placeholder="Your Name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                <input type="email" placeholder="Your Email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition">
+                <textarea placeholder="Your Message (and maybe a fun fact about your pet!)" rows="5" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition"></textarea>
+                <button type="submit" class="w-full bg-gradient-to-r from-orange-400 to-pink-400 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    Send Message 💌
+                </button>
+            </form>
+            <div id="form-message" class="mt-4 text-center"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-16">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="mb-4">&copy; 2025 Paws & Tails. All rights reserved. Because pets deserve copyrights too. 🐾</p>
+            <div class="space-x-4">
+                <a href="#about-us" class="text-orange-300 hover:text-orange-200 transition">Our Story</a>
+                <span class="text-gray-500">|</span>
+                <a href="#contact-us" class="text-orange-300 hover:text-orange-200 transition">Contact</a>
+                <span class="text-gray-500">|</span>
+                <a href="#" class="text-orange-300 hover:text-orange-200 transition">Policies</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="sticky top-0 bg-gradient-to-r from-green-400 to-green-500 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold" id="product-modal-title">➕ Add New Product</h3>
+                    <button onclick="closeProductModal()" class="text-3xl hover:scale-110 transition">&times;</button>
+                </div>
+            </div>
+            <form id="product-form" class="p-6 space-y-4">
+                <input type="hidden" id="product-id">
+                <input type="text" id="product-name" placeholder="Product Name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                <input type="number" id="product-price" placeholder="Price (USD)" min="0" step="0.01" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                <select id="product-category" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                    <option value="">Select Category</option>
+                    <option value="Food">Food</option>
+                    <option value="Beds">Beds</option>
+                    <option value="Toys">Toys</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Grooming">Grooming</option>
+                    <option value="Treats">Treats</option>
+                    <option value="Travel">Travel</option>
+                </select>
+                <textarea id="product-description" placeholder="Description" rows="3" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition"></textarea>
+                
+                <!-- Image Upload Option -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Product Image:</label>
+                    <div class="flex gap-2 mb-2">
+                        <button type="button" id="btn-upload-file" onclick="toggleImageInput('file')" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">
+                            📁 Upload File
+                        </button>
+                        <button type="button" id="btn-upload-url" onclick="toggleImageInput('url')" class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 transition">
+                            🔗 Use URL
+                        </button>
+                    </div>
+                    <input type="file" id="product-image-file" accept="image/*" class="hidden w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                    <input type="url" id="product-image" placeholder="Product Image URL (e.g., https://example.com/image.jpg)" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                </div>
+                
+                <input type="number" id="product-stock" placeholder="Stock Quantity" min="0" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition">
+                <button type="submit" class="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-3 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    Save Product
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gradient-to-r from-orange-400 to-pink-400 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold">🛒 Your Cart</h3>
+                    <button onclick="toggleCart()" class="text-3xl hover:scale-110 transition">&times;</button>
+                </div>
+            </div>
+            <div id="cart-items" class="p-6">
+                <p class="text-gray-500 text-center py-8">Your cart is empty. Time to spoil your pet! 🐾</p>
+            </div>
+            <div id="cart-total" class="hidden p-6 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xl font-bold">Total:</span>
+                    <span id="total-amount" class="text-2xl font-bold text-orange-500">$0.00</span>
+                </div>
+                <button onclick="proceedToCheckout()" class="w-full bg-gradient-to-r from-green-400 to-green-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    Proceed to Checkout 💳
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Modal -->
+    <div id="account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="sticky top-0 bg-gradient-to-r from-purple-400 to-blue-400 text-white p-6 rounded-t-2xl">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold">👤 <span id="modal-title">Account</span></h3>
+                    <button onclick="toggleAccount()" class="text-3xl hover:scale-110 transition">&times;</button>
+                </div>
+            </div>
+            
+            <!-- Logged Out View -->
+            <div id="auth-view" class="p-6">
+                <!-- Unified Login Form with Role Selection -->
+                <div id="login-form" class="space-y-4">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">Welcome Back! 🐾</h4>
+                    
+                    <!-- Role Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Login As:</label>
+                        <div class="flex gap-3">
+                            <button id="role-user-btn" onclick="selectLoginRole('User')" class="flex-1 px-4 py-3 rounded-lg border-2 border-purple-400 bg-purple-50 text-purple-700 font-semibold transition hover:bg-purple-100 role-btn active">
+                                👤 User
+                            </button>
+                            <button id="role-admin-btn" onclick="selectLoginRole('Admin')" class="flex-1 px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-gray-600 font-semibold transition hover:bg-gray-50 role-btn">
+                                🛡️ Admin
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <input type="email" id="login-email" placeholder="Email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <input type="password" id="login-password" placeholder="Password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <button onclick="handleUnifiedLogin()" class="w-full bg-gradient-to-r from-purple-400 to-blue-400 text-white px-8 py-3 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                        Login 🔐
+                    </button>
+                    <p class="text-center text-gray-600">
+                        Don't have an account? 
+                        <button onclick="showSignup()" class="text-purple-500 font-semibold hover:underline">Sign Up</button>
+                    </p>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signup-form" class="hidden space-y-4">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">Join the Pack! 🐶🐱</h4>
+                    <input type="text" id="signup-name" placeholder="Full Name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <input type="email" id="signup-email" placeholder="Email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <input type="password" id="signup-password" placeholder="Password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <input type="password" id="signup-confirm" placeholder="Confirm Password" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition">
+                    <button onclick="handleSignup()" class="w-full bg-gradient-to-r from-purple-400 to-blue-400 text-white px-8 py-3 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                        Sign Up 🎉
+                    </button>
+                    <p class="text-center text-gray-600">
+                        Already have an account? 
+                        <button onclick="showLogin()" class="text-purple-500 font-semibold hover:underline">Login</button>
+                    </p>
+                </div>
+                <div id="auth-message" class="mt-4 text-center"></div>
+            </div>
+
+            <!-- Logged In View -->
+            <div id="profile-view" class="hidden p-6">
+                <div class="text-center mb-6">
+                    <div class="w-24 h-24 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">
+                        👤
+                    </div>
+                    <h4 class="text-2xl font-bold text-gray-800" id="profile-name">Welcome!</h4>
+                    <p class="text-gray-600" id="profile-email"></p>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 mb-6">
+                    <h5 class="font-bold text-gray-800 mb-3">Account Benefits 🌟</h5>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>✅ Save your favorite products</li>
+                        <li>✅ Track order history</li>
+                        <li>✅ Get exclusive pet care tips</li>
+                        <li>✅ Early access to sales</li>
+                    </ul>
+                </div>
+
+                <button onclick="handleLogout()" class="w-full bg-gradient-to-r from-red-400 to-red-500 text-white px-8 py-3 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    Logout 👋
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the main app.js file (contains all JavaScript) -->
+    <script src="app.js"></script>
+
+</body>
+</html>
