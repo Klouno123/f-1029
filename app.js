@@ -12,7 +12,7 @@ const API_BASE_URL = isLocalhost
 // Helpful links (update these after deployment)
 const GITHUB_REPO_URL = 'https://github.com/Klouno123/paws-and-tails.git';
 const RENDER_SERVICE_URL = 'https://b-1029-wuca.onrender.com/api/products';
-const NETLIFY_SITE_URL = 'https://paws-and-tails-frontend.netlify.app';
+const NETLIFY_SITE_URL = 'ladjabuteam.netlify.app';
 
 // Product data (loaded from API)
 let products = [];
