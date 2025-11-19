@@ -6,12 +6,12 @@ const isLocalhost = window.location.hostname === 'localhost' ||
                     window.location.hostname === '127.0.0.1' ||
                     window.location.hostname === '';
 const API_BASE_URL = isLocalhost
-    ? 'https://b-1029-wuca.onrender.com/api/products'
-    : 'https://b-1029-wuca.onrender.com/api/products';
+    ? 'https://b-1029-wuca.onrender.com/api/'
+    : 'https://b-1029-wuca.onrender.com/api/';
 
 // Helpful links (update these after deployment)
 const GITHUB_REPO_URL = 'https://github.com/Klouno123/paws-and-tails.git';
-const RENDER_SERVICE_URL = 'https://b-1029-wuca.onrender.com/api/products';
+const RENDER_SERVICE_URL = 'https://b-1029-wuca.onrender.com/api/';
 const NETLIFY_SITE_URL = 'ladjabuteam.netlify.app';
 
 // Product data (loaded from API)
