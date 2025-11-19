@@ -1852,4 +1852,4 @@ function showAddProduct() {
     form.reset();
     document.getElementById('product-id').value = '';
     modal.classList.remove('hidden');
-}
+}       
